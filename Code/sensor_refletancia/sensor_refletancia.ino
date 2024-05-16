@@ -1,10 +1,12 @@
+#define digital_output 22
+
 void setup() {
-  pinMode(22, INPUT);
+  pinMode(digital_output, INPUT);
   Serial.begin(9600);
 }
 
 void loop() {
-  bool valor = digitalRead(22);
+  bool valor = digitalRead(digital_output);
   if(valor == false){
     Serial.println("branco");
   } else {
