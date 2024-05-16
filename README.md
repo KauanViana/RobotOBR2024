@@ -1,6 +1,6 @@
 # RobotOBR2024
 
-## :us:
+## Eng-US
 Software for a robot competing in OBR2024
 
 This project is being carried out by me and my team, consisting of Kauan Viana, Kaique Nobre, Yorrana de Medeiros, and João Victor Maisk.
@@ -9,7 +9,7 @@ This project is being carried out by me and my team, consisting of Kauan Viana, 
 
 [Code](/Code) contains the code we have built to manage the robot's components.
 
-## :brazil:
+## Pt-BR
 Software para um robô que competirá na OBR2024
 
 Esse projeto está sendo feito por mim e minha equipe, composta por Kauan Viana, Kaique Nobre, Yorrana de Medeiros e João Victor Maisk.
