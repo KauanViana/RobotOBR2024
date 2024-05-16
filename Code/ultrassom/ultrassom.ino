@@ -1,6 +1,6 @@
 #include <HCSR04.h>
 
-
+//Todo definir qual pino é echo e qual é trigger
 
 UltraSonicDistanceSensor distanceSensor( 22,23 );
 

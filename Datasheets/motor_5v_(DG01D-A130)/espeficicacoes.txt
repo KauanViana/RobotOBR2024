@@ -1,0 +1,13 @@
+fonte: https://www.robocore.net/motor-motoredutor/motor-dc-3-6v-com-caixa-de-reducao-e-eixo-duplo
+
+Este motor requer uma alimentação recomendada de 4,5V. Com eixo aberto, ele precisa de 190mA de corrente para funcionar, enquanto que seu eixo de saída roda a uma velocidade de 140RPM nestas circunstâncias.
+
+Especificações:
+
+    Tensão de alimentação recomendada: 4,5V
+    Corrente em aberto: 190mA
+    Corrente com máxima carga: 250mA
+    Corrente de Stall: 1.2A @ 6V (0.6A @ 3V)
+    Relação da caixa de redução: 48:1
+    Velocidade: 140RPM @ 4,5V sem carga
+    Torque: 800 gf.cm
