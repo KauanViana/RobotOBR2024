@@ -123,9 +123,9 @@ int I = 0;
 int D = 0;
 int PID = 0;
 
-int Kp = 15;
+int Kp = 35;
 int Ki = 0;
-int Kd = 15;
+int Kd = 0;
 
 int erro_anterior = 0;
 
