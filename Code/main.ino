@@ -1,138 +1,153 @@
-#include <L298N.h>  // Biblioteca ponte H
+enum Direcao {FRENTE, ESQUERDA, DIREITA};
 
-//Constantes
-const int quantia_de_sensores_de_refletancia = 5;
-const int tamanho_lista = 32;
-const int quantia_de_motores = 2;
+// Declarando as funções criadas
+void setar_velocidade(int velocidade);
+void mudar_direcao(Direcao index);
 
-bool preto = true;
-bool branco = false;
+// Definindo em qual pino cada sensor de refletância está conectado
+#define sensor_seguir_linha1 26 // O sensor de seguir linha 01 está conectado no pino 26
+#define sensor_seguir_linha2 27 // O sensor de seguir linha 02 está conectado no pino 27
+#define sensor_seguir_linha3 24 // O sensor de seguir linha 03 está conectado no pino 24
+#define sensor_seguir_linha4 25 // O sensor de seguir linha 04 está conectado no pino 25
 
-//Motor da direita
-#define IN1 50
-#define IN2 51
-#define ENA 3
-L298N motor_direita(ENA, IN1, IN2);
+// Definindo os valores da leitura do sensor de refletância
+#define BRANCO false // BRANCO equivale a false
+#define PRETO true // PRETO equivale a true
 
-//Motor da esquerda
-#define IN3 52
-#define IN4 53
-#define ENB 4
-L298N motor_esquerda(ENB, IN3, IN4);
-
-//Sensores de refletância
-#define direita_2 4
-#define direita_1 3
-#define meio 2
-#define esquerda_1 1
-#define esquerda_2 0
-
-const int pinos_sensores_refletancia[] = { esquerda_2, esquerda_1, meio, direita_1, direita_2 };
-
-//níveis de força para os motores
-const int n1 = 0;
-const int n2 = 40;
-const int n3 = 80;
-const int n4 = 120;
-const int n5 = 160;
-
-// Matriz de forças de motor
-int niveis_forca_motor[tamanho_lista][quantia_de_motores] = {
-  { n3, n3 }, { n5, n1 }, { n4, n2 }, { n4, n3 },
-  { n3, n3 }, { n3, n2 }, { n4, n3 }, { n5, n1 },
-  { n2, n4 }, { n3, n2 }, { n2, n2 }, { n3, n1 },
-  { n3, n4 }, { n2, n3 }, { n2, n2 }, { n5, n1 },
-  { n1, n5 }, { n2, n2 }, { n2, n3 }, { n3, n2 },
-  { n2, n3 }, { n2, n2 }, { n3, n2 }, { n5, n1 },
-  { n3, n4 }, { n2, n3 }, { n2, n3 }, { n3, n3 },
-  { n1, n5 }, { n1, n5 }, { n1, n5 }, { n3, n3 }
-};
-
-//Inverta em caso de inversão
-#define esquerda_frente motor_esquerda.backward
-#define esquerda_tras motor_esquerda.forward
-
-#define direita_frente motor_direita.backward
-#define direita_tras motor_direita.forward
-
-int valores_anteriores_sensor_refletancia[] = { 0, 0, 0, 0, 0 };
-int valores_atuais_sensor_refletancia[] = { 0, 0, 0, 0, 0 };
-
-// Cores atuais do sensor de refletância
-bool cor_atual[quantia_de_sensores_de_refletancia] = { branco, branco, branco, branco, branco };
-
-int delta_para_mudar = 30;
-
-void ler_sensores_refletancia_robo() {
-  //Salva o valor, antes dele mudar, no valor anterior
-  for (int i = 0; i < quantia_de_sensores_de_refletancia; i++) {
-    valores_anteriores_sensor_refletancia[i] = valores_atuais_sensor_refletancia[i];
-  }
-
-  //Lê o valor de cada sensor de refletância
-  for (int i = 0; i < quantia_de_sensores_de_refletancia; i++) {
-    valores_atuais_sensor_refletancia[i] = analogRead(pinos_sensores_refletancia[i]);
-  }
-}
-
-void comparar_valores_de_sensores() {
-  for (int i = 0; i < quantia_de_sensores_de_refletancia; i++) {
-    int delta = valores_atuais_sensor_refletancia[i] - valores_anteriores_sensor_refletancia[i];
-    int delta_abs = abs(delta);
-
-    if (delta_abs > delta_para_mudar) {
-      if (delta < 0 && cor_atual[i] == preto) {
-        cor_atual[i] = branco;
-      } else if (delta > 0 && cor_atual[i] == branco) {
-        cor_atual[i] = preto;
-      }
-    }
-  }
-}
-
-//Converte a leitura do sensor de refletância em um número de 5 bits
-int sensores_refletancia_para_numero() {
-  //Converte a lista de estados em um número de 5 bits
-  int numero_resultado = 0;
-  for (int i = 0; i < quantia_de_sensores_de_refletancia; i++) {
-    numero_resultado |= (cor_atual[i] << i);
-  }
-
-  return numero_resultado;
-}
+int vel_motor; // A variável que guardará o valor da velocidade dos motores
 
 void setup() {
-  //definindo pinos dos sensores de refletância
-  for (int i = 0; i < quantia_de_sensores_de_refletancia; i++) {
-    pinMode(pinos_sensores_refletancia[i], INPUT);
-  }
 
-  Serial.begin(9600);
-  while (!Serial) {
-    //fazer nada até serial carregar
-  }
+  // Pinos que serão conectados nas ponte h
+    pinMode(53,OUTPUT);
+    pinMode(52,OUTPUT);
+    pinMode(51,OUTPUT);
+    pinMode(50,OUTPUT);
 
-  delay(2000);
-  ler_sensores_refletancia_robo();
-  ler_sensores_refletancia_robo();
+  // Pinos dos sensores de seguir linha
+    pinMode(sensor_seguir_linha1,INPUT);
+    pinMode(sensor_seguir_linha2,INPUT);
+    pinMode(sensor_seguir_linha3,INPUT);
+    pinMode(sensor_seguir_linha4,INPUT);
+
+  // Pinos para velocidade dos motores
+    pinMode(6,OUTPUT); //esse pino irá definir a velocidade do motor 01
+    pinMode(5,OUTPUT); //esse pino irá definir a velocidade do motor 02
+
+  // Setando velocidade inicial dos motores como 90
+  vel_motor = 110;
 }
 
 void loop() {
-  ler_sensores_refletancia_robo();
-  comparar_valores_de_sensores();
 
-  motor_esquerda.setSpeed(niveis_forca_motor[sensores_refletancia_para_numero()][0]);
-  motor_direita.setSpeed(niveis_forca_motor[sensores_refletancia_para_numero()][1]);
+  // P = Periferico | C = Central | E = Esquerdo | D = Direito
+  bool sensor_CE = digitalRead(sensor_seguir_linha1); // Aqui, estamos pegando o que o sensor_CE está lendo e guardando em uma variável
+  bool sensor_CD = digitalRead(sensor_seguir_linha2); // Aqui, estamos pegando o que o sensor_CD está lendo e guardando em uma variável
+  bool sensor_PD = digitalRead(sensor_seguir_linha3); // Aqui, estamos pegando o que o sensor_PD está lendo e guardando em uma variável
+  bool sensor_PE = digitalRead(sensor_seguir_linha4); // Aqui, estamos pegando o que o sensor_PE está lendo e guardando em uma variável
 
-  Serial.print("Número: ");
-  Serial.print(sensores_refletancia_para_numero());
-  Serial.print(" (");
-  Serial.print(niveis_forca_motor[sensores_refletancia_para_numero()][0]);
-  Serial.print(", ");
-  Serial.print(niveis_forca_motor[sensores_refletancia_para_numero()][1]);
-  Serial.println(")");
+  // Se o sensor 01 ler PRETO o robo deve girar para ESQUERDA
+  if(sensor_CE == PRETO && sensor_CD == BRANCO && sensor_PD == BRANCO && sensor_PE == BRANCO) { 
+    setar_velocidade(vel_motor);
+    mudar_direcao(ESQUERDA);
 
-  esquerda_frente();
-  direita_frente();
-  delay(10);
+    delay(200);
+  }
+
+  // Se o sensor 02 ler PRETO o robo deve girar para DIREITA
+  if(sensor_CD == PRETO && sensor_CE == BRANCO && sensor_PD == BRANCO && sensor_PE == BRANCO) { 
+    setar_velocidade(vel_motor);
+    mudar_direcao(DIREITA);
+
+    delay(200);
+  }
+
+  // Se o sensor 03 ler PRETO o robo deve girar para DIREITA
+  if(sensor_PD == PRETO && sensor_CD == BRANCO && sensor_CE == BRANCO && sensor_PE == BRANCO) { 
+    setar_velocidade(vel_motor + 10);
+    mudar_direcao(DIREITA);    
+
+    delay(270);
+  }
+
+  // Se o sensor 04 ler PRETO o robo deve girar para ESQUERDA
+  if(sensor_PE == PRETO && sensor_CD == BRANCO && sensor_PD == BRANCO && sensor_CE == BRANCO) {
+    setar_velocidade(vel_motor + 10);
+    mudar_direcao(ESQUERDA);
+
+    delay(270);
+  }
+
+  // Se os sensores 02 e 01 lerem BRANCO o robo deve ir para FRENTE
+  if(sensor_CE == BRANCO && sensor_CD == BRANCO && sensor_PD == BRANCO && sensor_PE == BRANCO) {
+    setar_velocidade(vel_motor - 10);
+    mudar_direcao(FRENTE);
+  }
+
+/*
+  // Se todos os sensores lerem preto o robo deve parar
+  if(sensor_CD == PRETO && sensor_CE == PRETO && sensor_PE == PRETO && sensor_PD == PRETO) {
+    //O código abaixo faz o robo PARAR
+    digitalWrite(53,LOW);
+    digitalWrite(52,LOW);
+
+    digitalWrite(51,LOW);
+    digitalWrite(50,LOW);
+}
+*/
+
+
+}
+
+void setar_velocidade(int velocidade){
+/*
+
+  Para seguir a linha corretamente o robo precisa esta em uma velocidade que seja perfeita para ele percorrer o circuito
+  O robo não deve andar muito rápido!!!
+
+  para isso, temos que definir a velocidade que o robo deve andar
+
+  no Arduino, o intervalo de velocidade está entre: 
+    - 0(robo parado)
+    - 255(velocidade máxima)
+  Este código esta programado para o robo andar em uma velocidade de 110 
+
+*/
+//________________________________________________________________________________________________________________________________________
+//  OBS: a velocidade dos motores não devem ser diferentes, ou seja, se um é 200 o outro também deverá ser 200
+//________________________________________________________________________________________________________________________________________
+
+  analogWrite(6,velocidade);// a velocidade do motor 01 é 110
+  analogWrite(5,velocidade);// a velocidade do motor 02 é 110
+}
+
+void mudar_direcao(Direcao index){
+  switch(index){
+    case FRENTE:
+      // Faz o robô andar pra frente
+      digitalWrite(53,LOW);
+      digitalWrite(52,HIGH);
+
+      digitalWrite(51,HIGH);
+      digitalWrite(50,LOW);
+      break;
+
+    case DIREITA:
+      // Faz o robô girar para a direita
+      digitalWrite(53,LOW);// motor 01
+      digitalWrite(52,HIGH);// motor 01
+
+      digitalWrite(51,LOW);// motor 02
+      digitalWrite(50,HIGH);// motor 02
+      break;
+
+    case ESQUERDA:
+      // Faz o robô girar para a esquerda
+      digitalWrite(53,HIGH);// motor 01
+      digitalWrite(52,LOW);// motor 01
+
+      digitalWrite(51,HIGH);// motor 02
+      digitalWrite(50,LOW);// motor 02
+      break;
+  }
 }
